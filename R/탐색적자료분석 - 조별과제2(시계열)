@@ -1,0 +1,133 @@
+# 1. 부호그림 확인 결과 감소하는 추세가 보여 시계열 그래프로 자세하게 확인하기
+
+rm(list=ls())
+
+setwd('C:/Users/Stat1305_01/Desktop')
+setwd('C:/Users/EIS 3/Documents/카카오톡 받은 파일')
+Fin_Wide_data <- read.csv('Fin_Wide_data.csv',row.names = 'year_month')
+head(Fin_Wide_data)
+
+# 총 관광객수 변수 추가
+Fin_Wide_data$total_tour<-rowSums(Fin_Wide_data[,c(-1,-2)])
+Fin_Wide_data$Sum_Train <-rowSums(Fin_Wide_data[,c(1,2)])
+
+View(Fin_Wide_data)
+
+# 코로나 이전 이후 데이터 생성
+Fin_Wide_data_before <- Fin_Wide_data[1:49,]
+Fin_Wide_data_after <- Fin_Wide_data[50:60,]
+
+View(tsdata)
+
+# 시계열 데이터 생성
+tsdata <- ts(Fin_Wide_data, start = c(2016, 1), frequency = 12) # 시작 : 2016년 1월, 주기 12
+
+
+
+
+
+par(mfrow=c(1,2))
+ts.plot(tsdata[,15],main="철도 이용객수",ylab="철도 이용객")
+par(new=T)
+ts.plot(smooth(tsdata[,15]),col='blue',ylab="",ylim=c(134922,442980))
+legend("topright",legend=c("Train","Tukey"),fill=c("black","blue"),border="white",box.lty=0,cex=0.5)
+ts.plot(tsdata[,14],main="총 관광객 수", ylab="관광객")
+par(new=T)
+ts.plot(smooth(tsdata[,14]),col='red',ylab="",ylim=c(64582,597350))
+legend("topright",legend=c("tour","Tukey"),fill=c("black","red"),border="white",box.lty=0,cex=0.5)
+# 두 그래프 모두 1년 단위로 계절성 요인이 보였으며, 2020년을 기점으로 급격하게 하락(계절성 제거 후 시계열그래프 해석 후에 높은 점들 확인)
+
+# 정확한 그래프 해석을 위해 시계열 분해 실행
+
+m_Train <- decompose(tsdata[,15])
+m_total <- decompose(tsdata[,14])
+
+# 원 자료와 계절성 요인, 추세요인, 불규칙요인의 시각화
+
+plot(m_Train) # 두 그래프 모두 강한 계절성이 보여 계절성을 제거하고 분석할 필요가 보임.
+plot(m_total)
+
+# 계절요인을 제거한 그래프
+
+par(mfrow=c(1,2))
+ts.plot(tsdata[,15] - m_Train$seasonal,main="계절 요인을 제거한 철도 이용객수")
+ts.plot(tsdata[,14] - m_total$seasonal,main="계절 요인을 제거한 총 관광객 수")
+# 계절성을 제거하였음에도 철도 이용객 수와 관광객 수의 비교가 어렵다고 판한하여 코로나 전 후로 나눠서 진행
+
+
+# <코로나 전 후 비교>
+Fin_Wide_data_before <- Fin_Wide_data[1:48,]
+Fin_Wide_data_after <- Fin_Wide_data[49:60,]
+
+Fin_Wide_data_month_b = as.data.frame(aggregate(Fin_Wide_data_before,list(substr(rownames(Fin_Wide_data_before),5,6)),sum))
+rownames(Fin_Wide_data_month_b)<-paste(Fin_Wide_data_month_b$Group.1,"월",sep="")
+
+Fin_Wide_data_month_a = as.data.frame(aggregate(Fin_Wide_data_after,list(substr(rownames(Fin_Wide_data_after),5,6)),sum))
+rownames(Fin_Wide_data_month_a)<-paste(Fin_Wide_data_month_a$Group.1,"월",sep="")
+
+
+tsdata_a <- ts(Fin_Wide_data_month_a)
+tsdata_b <-ts(Fin_Wide_data_month_b)
+View(tsdata_a)
+View(tsdata_b)
+
+# 비교
+
+par(mfrow=c(2,2))
+
+ts.plot(tsdata_b[,16],main="코로나 이전 철도 이용객수")
+ts.plot(tsdata_a[,16],main="코로나 이후 철도 이용객수")
+ts.plot(tsdata_b[,15],main="코로나 이전 관광객 수")
+ts.plot(tsdata_a[,15],main="코로나 이후 관광객 수")
+# 코로나 이전 이후 월별로 나타낸 철도이용객 수와 관광객 수의 그래프를 확인해본 결과 이전이후 모두 철도 이용객과 관광지에 들리는 관광객의 수가 비슷한 양상을 띄는 것을 확인
+# 또한 철도 이용객수와 관광객의 수는 코로나 이전에 5월과 10월에 높게 나타났으며 코로나 이후 급감했다가
+# 점차 회복하는 양상을 보임
+
+
+
+attach(Fin_Wide_data_month_b)
+
+par(mfrow=c(1,2))
+acf(ts(Fin_Wide_data_month_b[,16]),main="철도 이용객 수")
+acf(ts(Fin_Wide_data_month_b[,15]),main="관광객 수")
+par(mfrow=c(1,1))
+ccf(ts(Fin_Wide_data_month_b[,16]),ts(Fin_Wide_data_month_b[,15]),main="철도 이용객수 & 관광객수")
+
+
+attach(Fin_Wide_data_month_a) ## 보완하기
+
+par(mfrow=c(1,2))
+acf(ts(Fin_Wide_data_month_a[,16]),main="철도 이용객 수")
+acf(ts(Fin_Wide_data_month_a[,15]),main="관광객 수")
+par(mfrow=c(1,1))
+ccf(ts(Fin_Wide_data_month_a[,16]),ts(Fin_Wide_data_month_a[,15]),main="철도 이용객수 & 관광객수")
+
+#철도 이용객 수와 관광객수에 대한 acf와 두 변수에 대한 ccf를 확인해본 결과 시점이 0 즉 x와 y는 매우 강한 상관관계가 있다고 판단되어
+#철도이용객수와 관광객수의 증감이 같다고 가정하고 철도이용객 수에 대해  각 요인별 효과를
+# 알아보기 위해 중간값 다듬기
+# 코로나 전 후 medpolish 비교
+medpolish_before <- medpolish(Fin_Wide_data_month_b[c(-1,-2,-3,-15,-16)])
+medpolish_before
+
+
+
+# ->행 효과 : 1월부터 12월까지의 중앙값인 6월과 7월(여름)을 중심으로 퍼진 행효과를 확인해본 결과 
+# 앞에서 살펴본 그래프와 동일하게 기온이 올라가기 시작하는 4월에서 증가하는 추세를 보이다가 5월에서 가장 많은 효과를 보이는 것이
+# 확인되었으며 여름 이후 기온이 좋아지는 10월에 요인의 효과가 올라가는 것을 확인할수 있었다. 이를 통해 관광지에 대한 관광객 수는 계절과
+# 밀접한 연관이 있다고 판단됨
+
+# -> 열효과 : 각 관광지에 대한 관광객의 수는 남이섬 유원지가 가장 많았고, 스키장의 영향이 가장 적게 나타난것을 알수 있었다.
+
+# -> 잔차 : 앞서 행 효과에서 살펴보았듯이 관광지에 대한 관광객의 수는 날씨와 밀접한 관련이 있어 
+# 잔차를 확인해본 결과 날씨가 가장 좋은 4월~7월에 남이섬 유원지가 가장 높은것이 확인되었고, 스키장의 경우 겨울인 1,2, 12월에 가장 높게 나타난것이 확이됨
+# 자세한 날씨에 대한 관광지의 효과는 주성분분석에서 진행할거라고 설명해주기
+
+
+medpolish_after <- medpolish(Fin_Wide_data_month_a[c(-1,-2,-3,-15,-16)])
+
+medpolish_after
+
+# 효과와 코로나 확진자 추이 연결해서 설명, 요인이 매우 낮아 회귀분석시 코로나 이전만 쓰겠다고 밑밥깔기
+# 행효과 : 확진자의 수가 많지않았던 1월에는 코로나 이전과 행 효과가 비슷하게 나타났지만 본격적으로 코로나 바이러스가 시작된
+# 2월이후에는 급격하게 줄어들은 것을 확인할 수 있었다. 이후 코로나사태가 잠시 진정되었던 7월과 10월에는 증가하였다가 하루 평균 확진 1000명대를 기록한 12월에는 다시 급격하게 줄어든것이 확인됨.
+# 코로나라는 외생변수로 인해 회귀분석시 철도관광객 이용수와 관광지 방문객에 대한 관계를 추론하기 어렵다고 판단되어 회귀분석시 코로나 이전 데이터만 활용하는것이 바람직해보임.
