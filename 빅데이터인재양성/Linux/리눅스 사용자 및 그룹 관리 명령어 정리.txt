@@ -1,0 +1,73 @@
+useradd (adduser)
+새로운 사용자 추가, 이 명령어 실행시 /etc/passwd, /etc/shadow, /etc/group 파일에 새로운 행 추가됨.
+
+useradd newuser     -> newuser라는 이름의 사용자 생성
+useradd -u 1111 newuser     ->newuser 사용자를 생성하면서 사용자 id를 1111로 지정함
+useradd -g mygroup newuser     -> newuser 사용자를 생성하면서 mygroup 그룹에 newuser사용자를 포함시킴
+(mygroup 이라는 그룹이 존재해야함)
+useradd -d /newhome newuser     -> newuser 사용자를 생성하면서 홈 디렉토리를 /newhome으로 설정
+useradd -s /bin/csh newuser     -> newuser 사용자를 생성하면서 기본 셀을 /bin/csh 로 지정
+ 
+
+passwd
+사용자 비밀번호 지정 또는 변경
+
+passwd newuser
+ 
+
+usermod
+사용자속성 변경. 옵션은 useradd랑 동일
+
+usermod -g root newuesr     -> newuser 사용자의 그룹을 root 그룹으로 변경
+ 
+
+userdel
+사용자 삭제
+
+userdel newuser     -> newuser 사용자 삭제
+userdel -r newuser     -> newuser 사용자삭제하면서 홈디렉토리 아래까지 다 삭제
+ 
+
+change
+사용자의 암호를 주기적으로 변경하도록 설정
+
+change -l newuser     -> newuser 사용자에 설정된 사항 확인
+change -m 2 newuser     -> newuser 사용자에 설정한 암호를 사용해야 하는 최소 일자 (2일 이상사용해야함)
+change - M 30 newuser     -> newuser 사용자에 설정한 암호를 사용할수 있는 최대 일자 (30일까지만 사용가능)
+change -E 2019/12/12 newuser     -> newuser 사용자에 설정한 암호가 만료되는 날짜 (즉, 2019/12/12 까지만 사용할 수 있음)
+chagne -W 10 newuser     -> newuser 사용자에 설정한 암호가 만료되기 전에 경고하는 기간, 지정하지 않았을 경우 기본 값은 7일 ( 이 경우는 만료 10일 전부터 경고)
+ 
+
+groups
+사용자가 소속된 그룹을 보여줌
+
+groups     -> 현재 사용자가 소속된 그룹을 보여줌
+groups newuser     -> newuser가 소속된 그룹을 보여줌
+ 
+
+groupadd
+새로운 그룹 생성
+
+groupadd newgroup     -> newgroup 이라는 그룹 생성
+groupadd -g 2222 newgroup     -> newgroup 그룹을 생성하면서 그룹 ID를 2222로 설정
+ 
+
+groupmod
+그룹의 속성 변경
+
+groupmod -n newgroup mygroup     -> newgroup 그룹의 이름 mygroup로 변경
+ 
+
+groupdel
+그룹 삭제
+
+groupdel newgroup     -> newgroup 그룹 삭제 ( 단 해당그룹을 주요 그룹으로 지정한사용자가 있어야함)
+ 
+
+gpasswd
+그룹의 암호를 설정하거나 그룹 관리를 수행
+
+gpasswd newgroup     -> newgroup 그룹의 암호를 지정
+gpasswd -A newuser newgroup     -> newuser사용자를 newgroup 그룹의 관리자로 지정
+gpasswd -a user1 newgroup     -> user1을 newgroup 그룹의 사용자로 추가
+gpasswd -d newuser newgroup     -> newuser 사용자 그룹에서 제거
