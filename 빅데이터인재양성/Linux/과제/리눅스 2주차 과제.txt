@@ -1,0 +1,60 @@
+ ## sudo su -
+
+# 디렉토리 생성하기
+[root@centos7 ~]# mkdir /university
+[root@centos7 ~]# mkdir -p  /university/kangwon
+[root@centos7 ~]# mkdir -p  /university/kangwon/kangwon_std
+[root@centos7 ~]# mkdir -p  /university/kangwon/kangwon_guest
+[root@centos7 ~]# mkdir -p  /university/wonju
+[root@centos7 ~]# mkdir -p  /university/wonju/wonju_std
+[root@centos7 ~]# mkdir -p  /university/wonju/wonju_guest
+[root@centos7 ~]# mkdir -p  /university/guest
+
+# 파티션
+[root@centos7 test]# fdisk /dev/sdb
+[root@centos7 test]# fdisk /dev/sdc
+
+#guest.dd 생성
+[root@centos7 test]# dd if=/dev/zero of =guest.dd bs = 1024 count = 100000
+
+# 파일시스템 생성(포멧 - ext4)
+[root@centos7 test]# mkfs.ext4 /dev/sdb1
+[root@centos7 test]# mkfs.ext4 /dev/sdb2
+[root@centos7 test]# mkfs.ext4 /dev/sdb3
+
+[root@centos7 test]# mkfs.ext4 /dev/sdc1
+[root@centos7 test]# mkfs.ext4 /dev/sdc2
+[root@centos7 test]# mkfs.ext4 /dev/sdc3
+
+[root@centos7 test]# mkfs.ext4 guest.dd  #/dev/loop0
+
+# 마운트
+[root@centos7 test]# mount /dev/sdb1 /university/kangwon
+[root@centos7 test]# mount /dev/sdb2 /university/kangwon_std
+[root@centos7 test]# mount /dev/sdb3 /university/kangwon_guest
+[root@centos7 test]# mount /dev/sdc1 /university/wonju
+[root@centos7 test]# mount /dev/sdc2 /university/wonju_std
+[root@centos7 test]# mount /dev/sdc3 /university/wonju_guest
+[root@centos7 test]# mount guest.dd /university/guest
+
+
+# 유저 생성
+[root@centos7 test]# adduser kangwonstudents
+[root@centos7 test]# adduser wonjustudents
+[root@centos7 test]# adduser guest
+[root@centos7 test]# adduser admin
+
+# vi /etc/passwd에서 admin 계정 root 권한 부여
+
+# 디렉토리 권한 변경
+[root@centos7 university]# chmod 740 /university/kangwon
+[root@centos7 university]# chmod 740 /university/wonju
+[root@centos7 guest]# chmod 1666 /university/guest
+[root@centos7 university]# chmod 670 /university/kangwon/kangwon_std
+[root@centos7 university]# chmod 671 /university/kangwon/kangwon_guest
+[root@centos7 university]# chmod 670 /university/wonju/wonju_std
+[root@centos7 university]# chmod 671 /university/wonju/wonju_guest
+
+# 디렉토리 소유그룹 변경
+chgrp -R kangwonstudent /university/kangwon
+chgrp -R wonjustudent /university/wonju
