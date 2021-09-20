@@ -1,0 +1,68 @@
+Docker compose 파일에서 사용되는 모듈에 대해서 확인 해보도록 하겠습니다.
+Docker compose 사용 방법
+위 링크에서 사용했던 docker-compose.yml로 추가로 설명 하도록 하겠습니다.
+docker-compose.yml
+version: '3'
+services:
+  package-product:
+    build: ./package
+    volumes:
+      - ./package:/usr/src/app
+    ports:
+      - 8180:80
+  company:
+    image: php:apache
+    volumes:
+      - ./company:/var/www/html/
+    ports:
+      - 8080:80
+    depends_on:
+      - package-product
+File system
+$ tree tour
+tour
+├── company
+│   └── index.php
+├── docker-compose.yml
+└── package
+    ├── api.py
+    ├── Dockerfile
+    └── requirements.txt
+1. version
+docker-compose 문서에 대한 버전을 지정합니다. 버전에 따라 조금씩 기능과 옵션이 다를 수 있습니다. 자세한 내용은 문서를 링크하도록 하겠습니다.
+Compose file version 3 reference
+These topics describe version 3 of the Compose file format. This is the newest version. There are several versions of…
+docs.docker.com
+
+2. services
+컨테이너를 실행하기 위해 정의 합니다. 컨테이너는 곧 서비스라는 개념으로 접근하시면 됩니다.
+3. Container name (package_product, company)
+services 내부에 컨테이너의 이름을 지정합니다. docker-compse ps 에서 name을 입니다.
+$ docker-compose ps
+         Name                       Command               State          Ports
+--------------------------------------------------------------------
+tour_company_1           docker-php-entrypoint apac ...   Up      0.0.0.0:8080->80/tcp
+tour_package-product_1   python api.py                    Up      0.0.0.0:8180->80/tcp
+실제 서비스 명은 — services 옵션으로 확인이 가능합니다.
+$ docker-compose ps --services
+package-product
+company
+4. image
+컨테이너에 사용될 이미지 입니다. 위 예제에서는 company의 image는 php:apache가 사용되었습니다.
+5. build
+Dockerfile빌드하기 위해서 Dockerfile이 있는 경로를 지정합니다.
+6. dockerfile
+위 예제에는 없지만 dockerfile명이 Dockerfile이 아닐 경우 파일명을 지정합니다.
+7. restart
+no: 수동으로 재시작 합니다.
+always: 컨테이너를 수동으로 끄기전까지 항상 재시작 됩니다.
+on-failure: 오류가 있을 시에 재시작합니다.
+8. environment
+환경 변수를 설정합니다.
+9. ports
+호스트와 컨테이너 포트를 설정합니다. Dockerfile에서 expose와 동일합니다.
+10. volumes
+지정한 경로의 볼륨을 마운트 합니다.
+11. depends_on
+services 간 종속을 설정합니다.
+company 서비스는 package-product에 종속되어 있습니다.
