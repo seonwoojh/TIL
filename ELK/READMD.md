@@ -1,1 +1,0 @@
-ELK Stack README.md
