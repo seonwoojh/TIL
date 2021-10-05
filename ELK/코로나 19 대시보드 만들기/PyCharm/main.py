@@ -1,4 +1,4 @@
-## 파일 다운로드하기
+# 코로나 대시보드를 위한 데이터 수집 파이썬 스크립트
 
 import csv, requests
 import pandas as pd
