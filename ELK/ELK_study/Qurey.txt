@@ -1,0 +1,116 @@
+# 인덱스 생성하기
+PUT my_index/_doc/1
+{
+  "name" : "SeonWoo Jihun",
+  "message" : "안녕하세요"
+}
+
+# 조회
+GET my_index/_doc/1
+
+# 도큐먼트 삭제시 인덱스는 남아있다.
+DELETE my_index/_doc/1
+
+# 인덱스 자체를 삭제하기
+DELETE my_index
+
+# 인덱스에 내용 업데이트하기
+POST my_index/_update/1
+{
+  "doc" : {
+    "age" : 27
+  }
+}
+
+
+# 벌크파일로 한번에 인덱스 생성하기
+POST _bulk
+{"index":{"_index":"test", "_id":"1"}}
+{"field":"value one"}
+{"index":{"_index":"test", "_id":"2"}}
+{"field":"value two"}
+{"create":{"_index":"test", "_id":"3"}}
+{"field":"value three"}
+{"update":{"_index":"test", "_id":"1"}}
+{"doc":{"field":"value two"}}
+
+
+# 쿼리 사용하기
+GET my_index/_search
+{
+  "query": {
+    "match": {
+      "message": "안녕"
+    }
+  }
+}
+
+
+POST my_index/_bulk
+{"index" : {"_id":1}}
+{"message" : "The qucik brown fox"}
+{"index" : {"_id":2}}
+{"message" : "The qucik brown fox jumps over the lazy dog"}
+{"index" : {"_id":3}}
+{"message" : "The qucik brown fox jumps over the quick dog"}
+{"index" : {"_id":4}}
+{"message" : "Brown fox brown dog"}
+{"index" : {"_id":5}}
+{"message" : "Lazy jumping dog"}
+
+# match 쿼리로 message 필드에서 dog 검색
+GET my_index/_search
+{
+  "query": {
+    "match": {
+      "message": "dog"
+    }
+  }
+}
+
+# 디폴트 OR
+GET my_index/_search
+{
+  "query": {
+    "match": {
+      "message": "quick dog"
+    }
+  }
+}
+
+# operator(검색어가 여럿일때 OR가 아닌 AND로 바꾸기)
+
+GET my_index/_search
+{
+  "query": {
+    "match": {
+      "message": {
+        "query": "quick dog"
+        , "operator": "and"
+      }
+    }
+  }
+}
+
+#quick dog라는 정확한 구문을 가져오고 싶을때
+GET my_index/_search
+{
+  "query": {
+    "match_phrase": {
+      "message": "lazy dog"
+    }
+  }
+}
+
+# match_phrase slop옵션 : 지정된 값 만큼 단어 사이에 다른 검색어가 끼어드는 것을 허용할 수 있다.
+GET my_index/_search
+{
+  "query": {
+    "match_phrase": {
+      "message": {
+        "query": "lazy dog",
+        "slop": 1
+      }
+    }
+  }
+}
