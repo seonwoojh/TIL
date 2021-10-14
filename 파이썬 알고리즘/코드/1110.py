@@ -1,5 +1,3 @@
-# 백준 더하기 사이클
-
 N = int(input())
 number = N
 count = 0
