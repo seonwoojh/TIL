@@ -1,4 +1,4 @@
-num_set = set()
+num_set = set
 for i in range(0,10):
 	A = int(input())
 	num_set.add((A % 42))
