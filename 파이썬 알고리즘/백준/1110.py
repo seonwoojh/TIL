@@ -1,4 +1,4 @@
-N = int(input())
+N = int(input()
 number = N
 count = 0
 
