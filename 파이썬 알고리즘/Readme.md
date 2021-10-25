@@ -11,6 +11,6 @@
 
 <br/>
 
-## ⛸ 백준
+<!-- ## ⛸ 백준 -->
 ----
 [![Solved.ac Profile](http://mazassumnida.wtf/api/v2/generate_badge?boj=tjswl950)](https://solved.ac/tjswl950/)
