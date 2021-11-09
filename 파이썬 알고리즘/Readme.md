@@ -14,3 +14,6 @@
 ## ⛸ 백준
 ----
 [![Solved.ac Profile](http://mazassumnida.wtf/api/v2/generate_badge?boj=tjswl950)](https://solved.ac/tjswl950/)
+
+
+알고리즘 개빡친다아아아아아ㅏㅇㄱ아ㅏㅇㄱ아강강ㄱ
