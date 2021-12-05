@@ -5,7 +5,7 @@ public class Casting {
 		
 		double a = 1.1;
 		
-		double b = 1; // 1은 int인데 double형태의 변수에 담길때 1이 실수형으로 자동 변환됨
+		double b = 1; // 1은 int타입인데 double형태의 변수에 담길때 1이 실수형으로 자동 변환됨
 		double b2 = (double) 1;
 		
 		System.out.println(b);
