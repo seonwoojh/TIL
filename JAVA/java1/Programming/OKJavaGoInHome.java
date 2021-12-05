@@ -6,15 +6,15 @@ public class OKJavaGoInHome {
 
 	public static void main(String[] args) {
 		
-		String id = "JAVA APT 507"
+		String id = "JAVA APT 507";
 		
 		// Elevator call
-		Elevator myElevator = new Elevator("id"); // Elevator
-		myElevator.callForUp(1); // ø§∏Æ∫£¿Ã≈Õ∏¶ 1√˛¿∏∑Œ ∫∏≥Ω¥Ÿ
+		Elevator myElevator = new Elevator(id); // Elevator
+		myElevator.callForUp(1); // ÏóòÎ¶¨Î≤†Ïù¥ÌÑ∞Î•º 1Ï∏µÏúºÎ°ú Î≥¥ÎÇ∏Îã§
 		
 		// Security off
-		Security mySecurity = new Security("id");
-		mySecurity.off(); // ≤Ù±‚
+		Security mySecurity = new Security(id);
+		mySecurity.off(); // ÎÅÑÍ∏∞
 		
 		// Light on
 		Lighting hallLamp = new Lighting(id + " / HallLamp");
