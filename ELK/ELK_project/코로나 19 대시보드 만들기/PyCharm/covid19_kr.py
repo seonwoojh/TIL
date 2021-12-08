@@ -3,7 +3,7 @@
 import csv, requests
 import pandas as pd
 
-CSV_URL = 'https://raw.githubusercontent.com/jooeungen/coronaboard_kr/master/kr_regional_daily.csv'
+CSV_URL = "https://raw.githubusercontent.com/jooeungen/coronaboard_kr/master/kr_regional_daily.csv"
 
 # 확진, 사망, 격리해제
 
