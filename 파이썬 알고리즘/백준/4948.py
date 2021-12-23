@@ -1,23 +1,19 @@
-import math
-import sys
+N = 123456 * 2 + 1
+sieve = [True] * N
+for i in range(2, int(N**0.5)+1):
+    if sieve[i]:
+        for j in range(2*i, N, i):
+            sieve[j] = False
 
-def isPrime(num):
-  if num == 1:
-    return False
-
-  n = int(math.sqrt(num))
-  for i in range(2, n+1):
-    if num % i == 0:
-      return False
-  return True
-
+def prime_cnt(val):
+    cnt = 0
+    for i in range(val + 1, val * 2 + 1):
+        if sieve[i]:
+            cnt += 1
+    print(cnt)
 
 while True:
-  N = int(sys.stdin.readline())
-  num_list = []
-  if N == 0:
-    break
-  for i in range(N + 1, ((2*N)) + 1):
-    if isPrime(i):
-      num_list.append(i)
-  print(len(num_list))
+    val = int(input())
+    if val == 0:
+        break
+    prime_cnt(val)
