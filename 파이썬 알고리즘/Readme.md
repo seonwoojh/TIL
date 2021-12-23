@@ -2,7 +2,7 @@
 
 <br/>
 
-* `무조건 하루에 한 문제 이상은 풀이하기`
+* `하루에 한 문제 이상은 풀이하기`
 
     * [백준](https://www.acmicpc.net/)
     * [프로그래머스](https://programmers.co.kr/)
