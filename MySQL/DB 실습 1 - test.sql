@@ -1,15 +1,15 @@
-show databases;
-create database mydb;
-use mydb;
-create table test
-(a int not null, b char(10),
-primary key(a) )
+SHOW databases;
+CREATE database mydb;
+USE mydb;
+CREATE TABLE test
+(a int NOT NULL, b CHAR(10),
+PRIMARY KEY(a) )
 engine=InnoDB default charset=utf8;
-show tables;
-insert into test values(1, 'data 123');
-insert into test values(2, 'data 2345');
-insert into test values(3, 'data 34567');
-insert into test values(4, 'data 456789');
-insert into test values(5, 'data 5678901');
-select * from test;
-select * from test where a >= 2;
+SHOW tables;
+INSERT INTO test VALUES(1, 'data 123');
+INSERT INTO test VALUES(2, 'data 2345');
+INSERT INTO test VALUES(3, 'data 34567');
+INSERT INTO test VALUES(4, 'data 456789');
+INSERT INTO test VALUES(5, 'data 5678901');
+SELECT * FROM test;
+SELECT * FROM test WHERE a >= 2;
