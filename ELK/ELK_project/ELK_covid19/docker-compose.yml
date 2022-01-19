@@ -1,13 +1,13 @@
-version: '2.2'
+version: '3.3'
 services:
   es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.0
     container_name: es01
     environment:
-      - node.name=es01
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
+      - node.name=node-1
+      - cluster.name=es-cluster-covid19
+      - discovery.seed_hosts=es01,es02,es03
+      - cluster.initial_master_nodes=node-1,node-2,node-3
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
@@ -18,16 +18,17 @@ services:
       - data01:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
+      - 9300:9300
     networks:
       - elastic
   es02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.0
     container_name: es02
     environment:
-      - node.name=es02
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es03
-      - cluster.initial_master_nodes=es01,es02,es03
+      - node.name=node-2
+      - cluster.name=es-cluster-covid19
+      - discovery.seed_hosts=es01,es02,es03
+      - cluster.initial_master_nodes=node-1,node-2,node-3
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
@@ -36,16 +37,19 @@ services:
         hard: -1
     volumes:
       - data02:/usr/share/elasticsearch/data
+    ports:
+      - 9201:9201
+      - 9301:9301
     networks:
       - elastic
   es03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.0
     container_name: es03
     environment:
-      - node.name=es03
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es01,es02
-      - cluster.initial_master_nodes=es01,es02,es03
+      - node.name=node-3
+      - cluster.name=es-cluster-covid19
+      - discovery.seed_hosts=es01,es02,es03
+      - cluster.initial_master_nodes=node-1,node-2,node-3
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
@@ -54,6 +58,9 @@ services:
         hard: -1
     volumes:
       - data03:/usr/share/elasticsearch/data
+    ports:
+      - 9202:9202
+      - 9302:9302
     networks:
       - elastic
 
