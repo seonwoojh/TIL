@@ -20,7 +20,7 @@ public class MethodsOfString_1 {
         System.out.println(str1.indexOf('a'));
         System.out.println(str1.lastIndexOf('a'));
         System.out.println(str1.indexOf('a', 8));
-        System.out.println();
+        System.out.println(str1.lastIndexOf('a', 8));
         System.out.println();
         System.out.println();
 
