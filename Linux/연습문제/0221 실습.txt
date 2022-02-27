@@ -1,0 +1,292 @@
+﻿==================================================================
+쉘 메타문자
+
+종류
+
+- 경로이름 메타문자
+
+- 파일이름 메타문자
+
+- 인용부호 메타문자
+
+- 방향재지정 메타문자
+
+
+경로이름 메타문자
+
+~ (틸드) : 현 사용자의 홈디렉토리 절대경로
+
+-        : 이전 디렉토리 이동시 사용( cd 명령어에서만 작용)
+
+~+       : 현재 디렉토리 절대경로 (./ => 현재 디렉토리를 가르키는 상대경로)
+
+~-       : 이전 디렉토리 절대경로
+
+~사용자  : 특정사용자의 홈디렉토리 절대 경로
+
+
+파일이름 메타문자
+
+* : zero or more
+
+? : 모든 한문자
+
+[] : 대괄호 안에 있는 문자들을 한문자씩 대입
+
+ex)
+
+[123] : 1,2,3 을 하나씩 대입
+
+[a-z] : a부터 z까지 한문자씩 대입
+
+[!] : 대괄호 안에 있는 문자들을 제외한 모든 문자
+
+{} : 브레이브 확장 (bash 에서만 사용 가능)
+     - 중괄호 안에 들어가 있는 문자열을 하나씩 배포
+ex)
+
+{sun,mon,tue,sat} : 안에 있는 내용을 하나씩 배포
+{001..100} : 001부터 100까지 차례대로 배포
+
+
+인용부호 메타문자 (echo와 사용시)
+
+'' : 모든 특수문자를 일반문자화 시킴
+
+"" : $,``,\을 제외한 모든 특수문자를 일반문자화 시킴
+
+$ :  - $(명령어구문) : 해당 명령어 실행
+     - $환경변수     : 환경변수 출력
+
+`` : $(명령어구문) 과 같은 효과
+
+\ : 이스케이프 문자 => \뒤에 오는 특수문자를 일반문자화
+
+
+방향재지정 메타문자
+
+> : 리디렉션 => 출력결과 파일 저장
+
+| : 파이프 라인 => | 앞에 오는 명령어의 결과를 | 뒤에 나오는 명령어의 파일로 제공
+
+
+
+쉘 메타문자 실습
+
+root로 접속
+
+1. /etc/ 로 이동 후에 틸드 문자를 사용해서 현 사용자의 디렉토리로 이동하시오.
+
+cd /etc/
+
+cd ~ 
+
+or
+
+cd  (default로 ~가 설정)
+
+2. /etc/sysconfig/network-scripts/ 로 이동 후에 홈으로 다시 이동 - 문자를 사용해서 이동해 보시오.
+
+cd /etc/sysconfig/network-scripts/
+
+cd -
+
+3. 자신의 홈디렉토리로 이동 /etc/sysconfig/network-scripts 디렉토리의 내용을 확인해보시오. (틸드 문자 이용)
+
+ls ~-/
+
+
+4. /media 디렉토리 안에 superman-season(1~3) 디렉토리를 각각 만들고 superman-season(1~3)-drama(01~10).avi 파일 생성 후에 이름에 맞추어서 각각 넣으시오. 파일 이동시 최대한 간단하게 작성해보시오.
+ex)
+directory명 : superman-season1 
+file명 : superman-season1-drama01.avi
+
+mkdir /media/superman-season{1..3}
+touch /media/superman-season{1..3}-drama{01..10}.avi
+mv /media/*n1*i /media/*1
+mv /media/*n2*i /media/*2
+mv /media/*n3*i /media/*3
+
+=> *n1*i 으로 이름을 축약한 이유
+
+*1*i 으로 하게 되면
+
+season1 선택 되고 그외에
+
+season(2,3)-drama01.avi 와 season(2,3)-drama10.avi 이 선택될 수 있음.
+
+
+리디렉션 및 파이프 
+실습
+
+1. ls -lR / 의 정상 출력 값은  ~/r01에 입력하고 에러값은 ~/r02에 입력하시오.
+
+ls -lR / 1> ~/r01  2> ~/r02
+
+2. ls -lR / 의 모든 출력 값을 ~/r03에 입력하시오.
+
+ls -lR / > r03 2>&1
+
+or
+
+ls -lR / &> r03
+
+3. ps -ef 의 출력값을 한화면씩 끊어서 보시오.
+
+ps -ef | less
+
+ps -ef | more
+
+4. yum list 의 결과값 중에서 ssh 라는 패턴이 들어가는 것을 출력해보시오.
+
+yum list | grep ssh
+
+5. 4번의 결과를 r04에 저장되도록 하시오.
+
+ym list | grep ssh | tee r04
+
+| tee는 | 으로 편집된 결과를 저장해주는 명령어
+
+===========================================================================
+signal syntax
+
+kill [option] PID  (default : -15)
+
+signal 종류
+
+signal번호     짧은옵션    긴옵션
+-1             -HUP        -SIGHUP    :   재설정(reload)
+-2             -INT        -SIGINT    :   인트럽트(ctrl + c)
+-9             -KILL       -SIGKILL   :   강제종료
+-15            -TERM       -SIGTERM   :   정상종료(terminated)
+-18            -CONT       -SIGCONT   :   계속 (continue)
+-19            -STOP       -SIGSTOP   :   일시정지(ctrl + z)
+
+
+프로세스 실습
+
+터미널 4개 열 것
+각 장치별로 sleep 1000 부터 4000 까지 백그라운드로 실행
+(pts/0=>sleep 1000, pts/1=>sleep 2000, pts/2 => sleep 3000, pts/3=>sleep 4000 각각 실행 )
+터미널 pts/0 에서 gedit과 firefox를 백그라운드로 실행
+
+pts/0 => sleep 1000 &
+pts/1 => sleep 2000 &
+pts/2 => sleep 3000 &
+pts/3 => sleep 4000 &
+
+pts/0 => gedit &
+pts/0 => firefox &
+
+
+1. sleep, gedit, firefox 의 PID 와 PPID 가 무엇인지 확인
+
+ps -ef | egrep '(sleep|gedit|firefox)'
+
+2. pts/2 번에서 sleep 20000 을 포그라운드로 실행시키고 백그라운드로 보내 볼 것
+
+sleep 20000
+ctrl + z
+jobs
+bg %작업번호 or bg +
+
+3. firefox를 kill 명령어로 kill 해볼 것
+
+kill -15 (-TERM or -SIGTERM) firefox pid
+
+4. gedit을 pkill 명령어로 kill 해볼 것
+
+pkill gedit
+
+5. pts/0, pts/3의 sleep 프로세스를 kill 할 것
+
+pkill -15 -t pts/0,pts/3 sleep
+
+6. 모든 bash 쉘 킬 할 것. 
+
+killall -9 bash
+
+7. nice 값 -11의 우선순위로 sleep 2000을 실행시키시오. (확인 ps -l | egrep '(sleep|NI)'
+
+nice -n 11 sleep 2000 &
+
+ps -l | egrep '(sleep|NI)'
+
+8. sleep 2000의 우선순위를 -15로 수정하시오.
+
+renice -n 15 sleep pid
+
+user로 사용자 전환 (su - user)
+
+9. 위에 7번을 실행해보시오.
+
+nice -n 11 sleep 2000 &
+에러 발생 : 일반 사용자는 음수로 나이스값을 부여 불가
+
+
+ps -l | egrep '(sleep|NI)'
+
+나이스 값이 0 임
+
+
+10. nice 값을 5로 sleep 2000 을 실행시키시오.
+
+nice -n 5 sleep 2000 &
+
+ps -l | egrep '(sleep|NI)'
+
+nice값이 5임
+
+11. nice 값을 4로 수정해보시오.
+
+renice -n 4 sleep pid 
+에러발생 : 일반 사용자는 nice값을 낮출 수 없음
+
+12. nice 값을 10으로 수정해보시오.
+
+renice -n 10 sleep pid 
+
+ps -l | egrep '(sleep|NI)'
+
+nice값이 10임
+
+
+========================================================================
+
+아카이브
+
+생성 tar cvf file명.tar 대상(file, directory)
+보기 tar tvf file명.tar
+해제 tar xvf file명.tar
+
+gzip  tar czvf file명.tar.gz  대상       가장 오래된 압축툴 압축속도 빠름 압축률 낮음
+bzip2 tar cjvf file명.tar.bz2 대상                          압축속도 중간 압축률 중간
+xz    tar cJvf file명.tar.xz  대상                          압축속도 느림 압축률 높음
+
+지정 아카이브 및 압축 해제 : -C 지정경로
+
+아카이브 실습
+
+/usr/bin 디렉토리를 아카이브 및 압축 (gzip, bzip2, xz) 를 해보시오.
+
+
+tar cvf   bin.tar     /usr/bin
+tar zcvf  bin.tar.gz  /usr/bin
+tar jcvf  bin.tar.bz2 /usr/bin
+tar Jcvf  bin.tar.xz  /usr/bin
+
+
+
+
+압축한  파일 중 xz 파일을 /tmp에 이동하지 말고 지정해서 압축해제 하시오.
+
+
+tar Jxvf bin.tar.xz  -C  /tmp
+
+
+
+
+
+
+
+
