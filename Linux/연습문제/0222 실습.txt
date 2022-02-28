@@ -1,0 +1,174 @@
+﻿사용자 관리 파일
+
+/etc/passwd
+
+계정명:패스워드(X):UID:GID:coment:home directory path:shell
+
+/etc/shadwow
+
+그룹 관리 파일
+
+/etc/group
+
+
+
+사용자 생성 관리
+
+사용자 생성 : useradd [option] [argument] 사용자명
+사용자 수정 : usermod [option] [argument] 사용자명
+사용자 삭제 : userdel -r 사용자명
+
+생성옵션
+-u : uid를 직접 설정
+-g : gid를 직접 설정하되 존재하는 그룹이어야 함.
+-c : 코멘트를 작성가능
+-d : home 디렉토리의 위치나 이름을 지정할 수 있음.
+-b : 베이스 홈 변경
+-s : 로그인 쉘을 지정할 수 있음.
+-G : 보조그룹 지정
+
+usermod 추가 옵션
+-a : 보조그룹을 추가 (-G와 함께 사용)
+-m : 홈디렉토리의 변경할때 사용(-d와 함께 사용)
+-l : 계정명 변경
+-L : 계정 잠금
+-U : 계정 잠금 해제
+
+
+사용자 생성 실습
+
+사용자   uid   gid  보조그룹     comment  home          shell   
+user01  1001  10                      /home/user01  /bin/bash
+
+useradd -g 10  user01
+
+user02  2000  2000 wheel      user    /home/user    /bin/sh
+
+useradd -u 2000 -G wheel  -c  user  -d /home/user  -s /bin/sh  user02
+
+user03  3000  1000                    /home/user03  /bin/csh
+
+useradd -u 3000 -g 1000 -s /bin/csh user03
+
+user04  4000  4000 10	      guser   /home/user04  /bin/bash
+
+useradd -u 4000 -G 10 -c guser user04
+
+default 값 수정
+
+/bin/bash => /bin/sh 로 수정 => vi 편집기로
+
+vi /etc/default/useradd
+
+/home    => /home1 로 수정 => 명령어를 통해서 
+
+useradd -D -b /home1 
+
+testuser01 생성해서 확인해볼 것
+
+useradd testuser01
+
+tail -1 /etc/passwd
+
+사용자 수정 실습
+
+사용자   uid   gid  보조그룹     comment  home          shell   
+user01  1001  1000 wheel               /home/user01 /bin/bash
+
+usermod -g 1000 -G wheel  user01
+
+user02  1002  2000 wheel,adm  user02   /home/user02 /bin/bash
+
+usermod -u 1002 -aG adm -c user02  -md /home/user02 -s /bin/bash user02
+
+user03  1003  1000 10                  /home/user03 /bin/bash
+
+usermod -u 1003 -G 10  -s /bin/bash user03
+
+user04  1004  4000 10, 2000   guser    /home/user04 /bin/bash
+
+usermod -u 1004 -aG 2000 user04
+
+testuser01 수정
+testuer01 => user05  
+/home1/testuer01 => /home/user05
+/bin/sh => /bin/bash
+
+usermod -l user05 -md /home/user05 -s /bin/bash testuser01
+
+그룹 관리
+
+groupadd [option] 그룹명
+
+-g : gid 부여
+
+groupmod [option] 그룹명
+
+-g : gid 수정
+-n : 그룹명 변경
+
+groupdel 그룹명
+
+group 실습
+
+id user01 => uid=1001(user01) gid=1001(user01)
+
+groupadd -g 1001 user01
+usermod -g 1001 user01
+
+id user02 => uid=1002(user02) gid=1002(user02)
+
+groupmod -g 1002 user02
+
+id user03 => uid=1003(user03) gid=1003(user03)
+
+groupadd -g 1003 user03
+usermod -g 1003 user03
+
+id user04 => uid=1004(user04) gid=1004(user04)
+
+groupmod -g 1004 user04
+
+passwd user01
+passwd user02
+
+암호속성 변경
+
+chage option argument 계정명
+
+option
+
+-l(소문자 L) 계정명 : 계정 암호속성 확인
+
+-m : 암호최소변경일 수정
+
+-M : 암호최대사용일 수정
+
+-W : 암호최대사용일 경고일 수정
+
+-I(대문자 i) : inactive 설정
+
+-E : 계정 만료기간 설정
+
+-d : 암호변경일 설정
+
+user01 의 
+minum date 10
+maximum date 100
+warning date 10
+
+chage -m 10 -M 100 -W 10 user01
+
+user02이 접속할때 암호변경을 하도록 설정
+
+chage -d 0 user02
+
+user01 의 홈디렉토리를 삭제하고 그래픽 모드에서 로그인이 가능하도록 만드시오.
+
+cp -r /etc/skel ~user01/
+chown -R user01:user01 ~user01/
+chmod 700 ~user01/
+
+
+
+================================================================
