@@ -1,0 +1,694 @@
+﻿초기설정으로 스냅샷
+
+user01, user02, user03 사용자 생성
+
+useradd user01
+useradd user02
+useradd user03
+
+aclgroup 생성
+
+groupadd -g 2000 aclgroup
+
+aclgroup에 user02 구성원 등록
+
+usermod -G 2000 user02
+
+grep acl /etc/group
+
+
+확장 권한
+
+user01이 cat 명령어를 통해서 /etc/shadow 내용을 볼 수 있도록 설정하시오.
+
+ls -l /etc/shadow
+
+----------. 1  root root  xxx  XXXXX /etc/shadow
+
+su - user01
+
+cat /etc/shadow
+
+에러 : 권한이 안됨
+
+exit
+
+chmod u+s /bin/cat
+
+ls -l /bin/cat
+
+-rws-r-xr-x. root root   xxxx XXXX /bin/cat
+
+su - user01
+
+cat /etc/shadow
+
+확인 가능
+
+/ptest 디렉토리를 만들고 안에 만들어지는 파일들의 소유그룹이 user02가 되도록 설정하시오.
+
+mkdir /ptest
+
+chmod 2777 /ptest
+
+chown :user02 /ptest
+
+touch /ptest/file1
+mkdir /ptest/dir1
+
+ls -l /ptest
+
+-rw-r--r--. 1 root user02  xxx   XXXXX  /ptest/file1
+drwxr-sr-x. 2 root user02  xxx   XXXXX  /ptest/dir1
+
+
+/ptest/ 안에 dir01 디렉토리 생성
+
+mkdir /ptest/dir01
+
+/ptest/dir01안에 만들어지는 파일이나 디렉토리가 만든 파일 생성자나 root만이 삭제할 수 있도록 설정하시오.
+
+chmod 1777 /ptest/dir01
+
+ls -ld /ptest/dir01
+
+drwxrwxrwt 2 root user02  xxx XXXX /ptest/dir01
+
+----------------------------------------------------------------
+
+acl 설정
+
+/ptest 777로 권한으로 생성
+
+rm -rf /ptest
+
+mkdir -m 777 /ptest
+
+/ptest 안에 dir02 디렉토리 생성
+
+mkdir /ptest/dir02
+
+dir02 디렉토리에 user03만 들어올 수 없도록 설정
+
+setfacl -m u:user03:0 /ptest/dir02
+
+getfacl /ptest/dir02
+
+dir02 안에  file01 생성
+
+touch /ptest/dir02/file01
+
+file01 에  user01은 읽기 쓰기가 가능하고 aclgroup 구성원은 읽기만 가능하도록 설정
+
+chmod 444 /ptest/dir02/file01
+setfacl -m u:user01:6 /ptest/dir02/file01
+
+dir02 안에 dir03 디렉토리를 만들고 user01은 읽기만 가능하고 aclgroup은 읽기 쓰기가 가능하도록 설정
+
+mkdir /ptest/dir02/dir03
+setfacl -m u:user01:5,g:aclgroup:7 /ptest/dir02/dir03
+
+dir02 안에 dir04 디렉토리를 만들고 dir04은 centos만 읽기 쓰기가 가능하고 나머지는 못들어오도록 설정
+
+mkdir /ptest/dir02/dir04
+chmod 000 /ptest/dir02/dir04
+setfacl -m u:centos:7 /ptest/dir02/dir04
+
+만약
+
+chmod 000 /ptest/dir02/dir04를 acl 설정 후에 진행했다면 결론적으로는 모든 사람이 사용하지 못하는 경우가 발생
+
+이유 : 
+
+acl 설정을 하게 되면 기존에 소유그룹의 권한 부분이 마스크의 권한으로 대체 되기 때문에 chmod를 acl 설정 후에 진행하게 되면 마스크의 권한이 변경되기 때문이다.
+
+setfacl -m u:centos:7 /ptest/dir02/dir04
+chmod 000 /ptest/dir02/dir04
+ls -l /ptest/dir02/dir04
+
+d---------+ 2 root root xxx XXXXXX  /ptest/dir02/dir04
+
+getfacl /ptest/dir02/dir04
+
+#filename : dir04
+#owner : root
+#group : root
+
+user::---
+user:centos:rwx            #effective  ---
+group::r-x                 #effective  ---
+mask::---
+other::--- 
+
+마스크의 권한이 ---가 되었기 때문에 실제 효과는 centos도 들어오지 못하게 됨.
+
+수정방법
+
+setfacl -m m::rwx,g::0 /ptest/dir01/dir04
+ls -l /ptest/dir01/dir04
+
+d---rwx---+  2  root root xxx XXXXXX /ptest/dir01/dir04
+
+getafcl /ptest/dir01/dir04
+
+#filename : dir04
+#owner : root
+#group : root
+
+user::---
+user:centos:rwx
+group::---
+mask::rwx
+other::--- 
+
+
+======================================================================
+
+
+작업예약
+
+단일성 예약
+
+특정시기에 한번 작업을 수행
+
+atd 라는 서비스를 이용
+
+atd 서비스 와 crond 서비스는 제어할 수 있는 터미널을 지정받지 못함.
+
+출력하는 명령어를 수행하게 되면 화면에 띄울 수가 없음.
+
+출력하는 명령어의 결과를 메일로 보내오거나 리다이렉션을 이용해서 파일로 저장을 해야 함.
+
+at 명령어 사용
+
+at timespec
+at> 프롬프트가 나오면 해당 작업 작성후 엔터
+at> 나오면 ctrl + d <EOF>
+
+at -l or atq : 예약 확인
+at -c 예약번호 : 작업 내용 확인
+atrm 예약번호 : 작업예약 취소
+
+
+timespec 작성 요령
+
+at 시간 날짜 순으로 기입
+
+22년 2월 23일 오전 10시 기준
+
+지금으로부터 2시간 뒤 작업
+
+at now +2hour (분 - min, 시 - hour)
+
+오후 4시 작업
+
+at 16:00 
+at 04:00 PM
+at teatime
+at 16:00 2/23/22 (월,일,년)
+at 16:00 23-02-23
+at 04:00 PM today
+at teatime today
+
+새벽 12시 작업
+
+at 00:00 
+at 12:00 AM
+at midnight
+
+내일 정오 작업
+
+at 12:00 PM 2/24/22
+at noon tomorrow
+
+/usr/share/doc/at-3.1.13/timespec 참조
+
+at 실습
+
+1.3분 뒤에 ps -ef 명령어를 실행해서 psfile01에 저장되도록 설정
+
+at now +3min
+at> ps -ef > psfile01
+at> ctrl+d
+
+2.23년 8월 1일에 date 명령어를 실행해서 메일로 오도록 설정
+
+at 8/1/23
+at> date
+at> ctrl+d
+
+3.오늘 오후 12시에 cal 명령어를 실행해서 메일로 오도록 설정
+
+at noon today
+at> cal
+at> ctrl+d
+
+4.내일 오후 4시에 ps -ef 명령어를 실행해서 psfile02에 저정하도록 설정
+
+at teatime tomorrow
+at> ps -ef > psfile02
+at> ctrl+d
+
+5.작업 예약을 확인하시오.
+
+at -l or atq
+
+
+------------------------------------------
+
+반복성 예약
+
+crond 서비스 이용
+
+사용자 cron 과 시스템 cron
+
+사용자 cron
+
+crontab 이라는 명령어를 사용
+
+crontab -e : 작업예약
+crontab -l : 작업예약 목록 확인
+crontab -r : 작업예약 취소(모든 작업 취소)
+crontab 파일명 : 다른 파일에 만들어놓은 작업을 불러올 수 있음.
+
+cron의 timespec 설정법
+
+X      X      X       X         X         command
+분     시     일      월        요일
+(0~59) (0-23) (1-31)  (1-12)    (0-7:0,7 일요일)
+                      (약식월)  (약식요일)
+특수문자
+* : 모두 참
+- : 범위
+/ : 주기
+, : 연속되지 않은 다수
+
+
+
+1월1일 새벽12시 reboot
+
+0 0 1 1 * reboot
+
+12월 15일 오후 3시부터 오후 6시까지 15분마다 date
+
+*/15 15-18 15 12(or Dec) * date
+
+매월 첫번째 월요일 오후 1시 정각에 date 
+
+0 13 1-7 * 1(Mon) date
+
+매분마다 date명령어를 datefile에 기입하시오.(이어쓰기로)
+
+* * * * * date >> datefile
+
+시스템 cron
+
+cron 과 anacron 으로 2가지 종류가 있음.
+
+일반 cron은 시스템이 켜져 있는 동안에만 해당 시간의 작업을 수행
+
+해당 시간에 시스템이 다운되어 있으면 수행하지 않음.
+
+/etc/crontab 파일을 양식지로 사용해서 /etc/cron.d/ 다른 파일 저장으로 등록
+
+기존 사용자 cron과 다른 점 cron 예약시 사용자 계정이 들어감.
+
+anacron은 작업 해당시간에 시스템이 꺼져 있어서 실행하지 못하더라도 시스템이 켜지면 일정시간 대기후에 해당 작업 실행
+
+
+
+1.매년 1월 첫번째 일요일 자정에 재부팅이 되도록 설정
+
+0 0 1-7 1 0 reboot
+
+2.매월 오후 1시부터 5시까지 10분마다 date 명령어를 실행해서 datefile01에 이어쓰기로 저장하도록 설정 
+
+*/10 13-17 * * * date >> datefile01
+
+vi 편집기로 test 파일에 다음 내용 설정
+
+vi test
+
+3.매년 3월, 6월, 9월 2번째 화요일 14시 20분에 /etc/passwd 화일의 내용을 userfile에 갱신하도록 설정
+
+20  14  8-14  3,6,9  2 cat /etc/passwd > userfile
+
+4.매주 수~금 오후 5시에 /var/log/secure의 내용 중 오전 8시 정각부터 오후 5시59분까지의 내용을 securefile에 갱신하도록 설정
+
+0 17 * * 3-5 egrep '^... .. (0[89]|1[0-7])' /var/log/secure > securefile
+
+or
+
+0 17 * * 3-5 grep -e '^... .. 0[89]' -e '^... .. 1[0-7]' /var/log/secure > securefile
+
+grep을 통해서 검색할때 
+
+08 ~ 17
+08 09 10 11 12 13 14 15 16 17 데이터만 나오도록 해야함
+
+[01][0-8]로 검색하게 되면 원하지 않는 시간대가 나옴
+
+00 01 02 03 04 05 06 07 18
+
+egrep을 이용해서 시간대를 나누어서 검색을 해야 함.
+
+0[89] 1[0-7]
+
+5.3,4번의 작업을 파일로 예약하시오.
+
+crontab -l
+
+crontab test
+
+6.작업 예약을 확인하시오.
+
+crontab -l
+
+7. 3번 작업만 삭제하시오.
+
+crontab -e
+
+3번 작업 삭제
+
+:wq
+
+crontab -l
+
+8. 모든 작업을 삭제하시오.
+
+crontab -r
+
+------------------------------------------------------
+시스템 디스크 사용 절차
+
+디스크 삽입 - 파티션 생성 - 파일시스템 포멧 - 마운트
+
+
+디스크, 파티션, 파일시스템, 마운트 관련 명령어
+
+lsblk : 현재 시스템의 블록장치에 관련한 상태 확인
+
+fdisk 디스크명 : MBR 파티션 생성
+
+gdisk 디스크명 : GPT 파티션 생성
+
+partprobe 디스크명 : 디스크 정보를 시스템에 등록
+
+mkfs -t 파일시스템 파티션명 : 파일시스템 포멧
+mkfs.파일시스템 파티션명
+
+mount 장치명 마운트포인트(path) : 마운트 실행
+- mount -a : /etc/fstab에 등록된 마운트 실행
+
+umount 장치명(마운트포인트)  : 마운트 해제
+- umount -a : 사용중인 마운트 제외한 모든 마운트 해제
+
+df -Th : 파일시스템 상태 확인
+
+blkid : 파일시스템 관련 파티션 확인
+
+
+
+디스크 구조 및 파일 시스템 실습
+
+파티션 생성
+
+대상:/dev/sdb
+파티션 생성
+주 파티션 2G 2G 2G
+확장 파티션 2G 2G 2G 2G 
+
+fdisk /dev/sdb
+
+n
+(엔터 : default p)
+(엔터 : 파티션 번호 default)
+(엔터 : first sector default)
++2G
+
+n
+(엔터 : default p)
+(엔터 : 파티션 번호 default)
+(엔터 : first sector default)
++2G
+
+n
+(엔터 : default p)
+(엔터 : 파티션 번호 default)
+(엔터 : first sector default)
++2G
+
+n
+(엔터 : default e)
+(엔터 : 파티션 번호 default)
+(엔터 : first sector default)
+(엔터 : last sector default)
+
+p
+
+n
+(엔터 : logical partition first sector)
++2G
+
+n
+(엔터 : logical partition first sector)
++2G
+
+n
+(엔터 : logical partition first sector)
++2G
+
+n
+(엔터 : logical partition first sector)
++2G
+
+
+w
+
+partprobe /dev/sdb
+
+파티션 1~3 ext4로 포맷
+
+mkfs -t ext4 /dev/sdb1
+
+mkfs -t ext4 /dev/sdb2
+
+mkfs -t ext4 /dev/sdb3
+
+파티션 5~8 xfs로 포맷
+
+mkfs.xfs /dev/sdb5
+
+mkfs.xfs /dev/sdb6
+
+mkfs.xfs /dev/sdb7
+
+mkfs.xfs /dev/sdb8
+
+/mnt/disk1~3 에 파티션 1~3 을 각각 수동 마운트
+
+mkdir /mnt/disk{1..3}
+
+mount /dev/sdb1  /mnt/disk1
+
+mount /dev/sdb2  /mnt/disk2
+
+mount /dev/sdb3  /mnt/disk3
+
+마운트 및 파일시스템 확인
+
+lsblk
+df -Th
+
+한꺼번에 마운트 해제
+
+umount -a
+
+파티션 1~3을 xfs로 재 포맷 
+
+mkfs.xfs -f /dev/sdb1
+
+mkfs -t xfs -f /dev/sdb2
+
+mkfs.xfs -f /dev/sdb3
+
+자동 마운트
+
+sdb1  /mnt/disk1     =>   UUID로 장치명을 지정하시오.
+sdb2  /mnt/disk2
+sdb3  /mnt/disk3
+
+blkid 
+
+/dev/sdb1 의 uuid 값을 복사
+
+vi /etc/fstab
+
+G
+o
+
+장치명         마운트위치     파일시스템명    옵션     덤프여부   파일시스템체크순서
+
+sdb1의 uuid    /mnt/disk1     xfs             defaults  1          1
+/dev/sdb2      /mnt/disk2     xfs             defaults  1          1
+/dev/sdb3      /mnt/disk3     xfs             defaults  1          1
+
+:wq
+
+재부팅 하지 말고 자동마운트 설정된 마운트들을 모두 마운트
+
+mount -a
+
+lsblk
+
+df -Th
+
+/dev/sdb의 모든 파티션 삭제
+
+umount -a
+
+fdisk /dev/sdb
+
+d
+4번 파티션 삭제 => extend partition을 삭제하게 되면 logical 파티션 모두 삭제
+
+d
+(엔터 - default)
+
+d
+(엔터 - default)
+
+d
+
+w
+
+partprobe /dev/sdb
+
+/dev/sdb(1~3) 정보 삭제
+
+vi /etc/fstab
+입력정보 삭제
+:wq
+
+-------------------------------------------------
+
+스왑메모리
+
+
+스왑공간 확인         : free
+
+스왑파일시스템        : mkswap 파티션명
+
+수동 스왑 마운트      : swapon  파티션명
+
+수동 스왑 마운트 해제 : swapoff  파티션명
+
+설정된 스왑 마운트    : swapon -a
+
+모든 스왑 마운트 해제 : swapoff -a
+
+-------------------------------------
+
+스왑 실습
+
+대상:/dev/sdb
+파티션 생성
+주파티션
+1G, 2G, 3G 시스템 네임 swap으로 설정
+
+fdisk /dev/sdb
+
+파티션 생성
+
+t
+1
+83
+
+t
+2
+83
+
+t
+3
+83
+
+p
+
+w
+
+partprobe /dev/sdb
+
+스왑 파일시스템으로 포맷
+
+mkswap /dev/sdb1
+
+mkswap /dev/sdb2
+
+mkswap /dev/sdb3
+
+스왑 용량 확인
+
+free
+
+swapon -s
+
+파티션 1을 수동 스왑 마운트
+
+swapon /dev/sdb1
+
+스왑 용량 확인
+
+free
+
+swapon -s
+
+파티션 2을 자동 스왑 마운트 설정 (UUID로)
+
+blkid
+/dev/sdb2 uuid 복사
+
+vi /etc/fstab
+G
+sdb2의 uuid  swap   swap  defaults  0  0
+
+
+파티션 3을 자동 스왑 마운트 설정 (파티션명으로)
+
+/dev/sdb3    swap   swap  defaults  0  0
+
+:wq
+
+
+스왑 용량 확인
+
+free
+swapon -s
+
+자동마운트 설정된 것 모두 마운트(재부팅하지 말고)
+
+swapon -a
+
+스왑 용량 확인
+
+free
+swapon -s
+
+모든 스왑 마운트 해제
+
+swapoff -a
+
+스왑 용량 확인
+
+free
+swapon -s
+
+설정된 스왑 마운트 다시 재 마운트
+
+swapon -a
+
+스왑 용량 확인
+
+free
+swapon -s
+
+/dev/sdb1 의 스왑은 수동으로 마운트 한 것이기 때문에 마운트가 안됨.
