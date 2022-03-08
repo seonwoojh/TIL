@@ -1,0 +1,228 @@
+﻿LVM 확장 축소 실습
+
+초기 설정으로 스냅샷
+전원 on 전에 디스크 10G,10G,20G,20G 추가
+
+가정
+
+/dev/sdb 20G
+/dev/sdc 20G
+/dev/sdd 10G
+/dev/sde 10G
+
+10G,20G 를 볼륨그룹으로 생성 (pe:8M)
+
+논리볼륨 lv01:5G(-l),lv02:10G(-L),lv03:5G(-l) 생성
+
+lv01은 swap으로 자동 마운트 설정하고 수동 마운트 할 것.
+
+lv02는 /media/disk1/에 자동 마운트 설정하고 수동마운트 (xfs)
+
+lv03은 /media/disk2/에 자동 마운트 설정하고 수동마운트 (ext4)
+
+디스크 10G를 볼륨그룹에 추가 할 것
+
+lv03 용량을 7G로 확장할 것 (+ 옵션을 사용하지 말 것)
+
+10G 디스크를 볼륨 그룹에서 제거 해보시오. 
+
+20G 디스크를 볼륨 그룹에서 제거 해보시오.
+
+============================================================================================================================
+
+시스템의 유닛 확인
+
+systemctl or systemctl list-units
+
+-a or --all : 모든 유닛
+
+-t or --type : 특정 유닛 지정
+
+시스템 유닛의 활성화 상태 확인
+
+systemctl list-unit-fils
+
+유닛 제어 서브 커맨드
+
+systemctl sub-command unit
+
+status : 상태확인
+start : 시작
+stop : 종료
+restart : 재시작
+reload : 재설정
+enable : 활성화
+disable : 비활성화
+mask : 마스크 설정
+unmansk : 마스크 해제
+
+systemctl 실습
+
+httpd 서비스 상태 확인
+
+httpd 서비스 시작
+
+httpd 서비스 활성화
+
+httpd 서비스 중지
+
+httpd 서비스 비활성화
+
+httpd 서비스 잠금
+
+httpd 서비스 잠금해제
+
+httpd 서비스 시작 후에 pid 확인
+
+httpd 서비스 리로드 후 pid 확인
+
+httpd 서비스 재시작 후 pid 확인
+
+
+==========================================================================================
+
+log : 시스템에 일어나는 이벤트 들에 대한 기록
+
+중요한 이유
+- 이슈 발생시에 해당 시간에 일어났었던 일에 파악하기 위한 첫번째 수단
+
+로그가 저장되는 위치 : /var/log
+
+로그를 관장한 서비스 : systemd-journald, rsyslogd 
+
+-> systemd-journald : 로그를 수집하는 역활 (/run/)
+-> rsyslogd : 로그를 저장하는 역활 (/var/)
+
+rsyslong 서비스
+
+/var/messages : 대부분의 로그기록(단 인증,메일,반복예약,부팅 그리고 디버그 제외)
+/var/secure : 인증에 관련된 로그
+/var/maillog : 메일에 관련된 로그
+/var/cron : 반복적인 예약에 관련된 로그
+/var/boot.log : 부팅에 관련된 로그
+
+facility(기능).priority(우선순위)
+
+facility
+authpriv : 인증
+auth,security : login
+cron : cron,at 과 같은 스케쥴링
+daemon : telnet,ftp 와 같은 데몬서비스
+kern : 커널
+mail : 메일
+local1-8 : 부팅
+lpr : 프린트
+mark : syslog에 의해 만들어지는 날짜유형
+user : 사용자
+
+priority
+
+0:emerg
+1:alert
+2:critical
+3:error
+4:warning
+5:notice
+6:info
+7:debug
+
+rsyslog.conf 설정 변경후 반영
+
+systemctl restart rsyslog.service
+
+실시간 로그 모니터링
+
+tail -f /var/log/로그파일
+
+로그 메세지 발생
+
+logger -p 기능.우선순위  "메세지"
+
+systemd-journald 서비스
+
+journalctl : 확인
+-> 옵션 : 
+	- n 숫자 : 최근 내역서 숫자 만큼 출력
+	- p 우선순위 : 해당 우선순위 이상으로 출력
+	- f : 실시간으로 모니터링
+	--since yyyy-mm-dd : 해당 날짜부터 현재까지 출력
+	--since yyyy-mm-dd --until yyyy-mm-dd : since 부터 until까지 출력
+
+/run/log/journal  영구저장
+
+mkdir /var/log/journal
+chmod g+s /var/log/journal
+chown :systemd-journal /var/log/journal
+systemctl restart systemd-journald.service
+
+log 실습
+
+rsyslog.conf 파일을 수정해서 cron.err 이상 내용만 /var/log/cron1 파일에 저장되도록 설정하시오.
+
+logger 명령어를 통해서 cron.info => cronlog1 와 cron.crit => cronlog2 의 메세지를 발생시켜서 /var/log/cron 파일과 /var/log/cron1 파일을 확인해보시오.
+
+journal 내용을 영구 저장하도록 설정하시오.
+
+==============================================================
+
+default target 확인
+
+systemctl get-default
+
+default target 설정
+
+systemctl set-default multi-user.target / graphical.target
+
+타겟 전환
+
+systemctl isolate multi-user.target / graphical.target
+
+
+root 비번 변경
+
+커널선택 화면에서 아무키 눌러서 카운트 해제
+원하는 커널에서 'e'눌러서 grub 진입
+linux16 라인 끝에 rd.break 입력 후 ctrl+x
+mount -o rw,remount /sysroot
+chroot /sysroot
+passwd
+touch /.autorelabel
+ctrl+d
+ctrl+d
+
+부트로더 커널 이미지 시간 
+
+vi /etc/default/grub
+
+GRUB_TIMEOUT=5 => 5를 다른 숫자로
+:wq
+
+
+부트로더 ID 및 PW 설정
+
+vi /etc/grub.d/00_header
+
+G를 눌러 제일 마지막 부분으로 이동
+
+o를 눌러 편집모드로 들어가서 해당 부분 작성
+
+cat << EOF
+set superusers='ID명'
+password ID명 PW
+EOF
+:wq
+
+설정내용 부트로더 인식
+
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+reboot
+
+
+default-target 확인
+
+default-target 변경
+
+target 전환
+
+ 
