@@ -1,0 +1,539 @@
+﻿nmcli connection sub-comand
+
+
+add         : connection 생성
+modify(mod) : connection 수정
+delete(del) : connection 삭제
+up          : connection 활성화
+down        : connection 비활성화
+reload      : connection 수정사항 재설정
+show        : connection 설정 확인
+
+생성
+
+nmcli con add option argument
+
+option
+
+유동IP & 고정IP 공통설정
+
+con-name    (connection.id) : connection 이름
+ifname      (connection.interface) : connection과 연결할 device
+type        (connection.type)      : 통신방식 (ethernet, wifi, bluetooth,..)
+autoconnect (connection.autoconnect) : 부팅시 자동 연결
+
+고정IP 설정
+
+ip4          (ipv4.addresses)  :  고정IP 주소
+gw4          (ipv4.gateway)    :  게이트웨이 주소
+
+ex)
+
+장치명 : enp0s7
+통신방식 : 유선
+유동IP 방식(dhcp)
+부팅시 자동 연결
+
+nmcli con add con-name dhcp7 
+              ifname enp0s7 
+              type ethernet 
+              autoconnect yes
+
+nmcli con
+
+nmcli con show dhcp7
+
+ipv4.method      auto
+
+
+장치명 : enp0s7
+통신방식 : 유선
+고정IP 방식 : 10.100.5.100/24
+              10.100.5.2
+부팅시 자동 X
+
+nmcli con add con-name static7 
+              ifname enp0s7 
+              type ethernet 
+              autoconnect no 
+              ip4 10.100.5.100/24 
+              gw4 10.100.5.2
+
+nmcli con 
+
+nmcli con show static7
+
+connection.autoconnect no
+
+ipv4. method           manual
+
+ipv4.addresses         10.100.5.100/24
+
+ipv4.gateway           10.100.5.2
+
+
+수정
+
+nmcli con modify (mod) option argument
+
+option
+
+nmcli con show 연결명을 실행 했을 때 나오는 항목이 모두 옵션
+
+기존 연결 dhcp7 에 대해서 아래 와 같이 수정을 한다면
+
+연결 이름 dhcp7  static7-1
+유동IP => 고정IP
+ip 주소 : 10.100.5.200/24
+dns 주소: 10.100.5.100
+
+nmcli con mod dhcp7 connection.id static7-1 
+                    ipv4.method manual 
+                    ipv4.addresses 10.100.5.200/24 
+                    ipv4.gateway 10.100.5.2 
+                    ipv4.dns 10.100.5.100
+
+
+연결명 수정 static7 => dhcp7-1
+고정IP => 유동IP
+dns 주소 8.8.8.8 10.100.5.100
+자동연결 O
+
+nmcli con mod static7 connection.id  dhcp7-1
+                      ipv4.method    auto
+                      ipv4.addresses ""
+                      ipv4.gateway   ""
+                      connection.autoconnect  yes
+                      ipv4.dns 8.8.8.8
+                      +ipv4.dns 10.100.5.100
+
+네트워크 관리 실습
+
+초기설정으로 초기화
+
+현재 각 인터페이스 별 IP 주소 확인(2가지 방법 모두 실행)
+
+ifconfig 장치명
+
+ip addr show 장치명
+
+8.8.8.8에 대한 네트워크 경로 확인 (2가지 방법 모두 실행)
+
+traceroute 8.8.8.8
+
+tracepath 8.8.8.8
+
+유동 아이피 설정
+
+con-name  : dhcp1 
+유동 IP 설정
+
+nmcli con add con-name dhcp1 \
+              ifname enp0s9 \
+              type ethernet \
+              autoconnect yes \
+
+nmcli con 
+
+nmcli con show dhcp1
+
+nmcli con up dhcp1
+
+ip addr show enp0s9
+
+고정 아이피 설정
+
+con-name  : static1
+IP address: 192.168.56.200
+PREFIX    : 24
+
+nmcli con add con-name static1 \
+              ifname enp0s9 \
+              type ethernet \
+              ip4 192.168.56.200/24 \
+              gw4 192.168.56.1
+
+nmcli con 
+
+nmcli con show static1
+
+nmcli con up static1
+
+ip addr show enp0s9
+
+
+dhcp1 연결 설정 수정
+
+con-name  : static100
+IP address: 192.168.56.150
+PREFIX    : 24
+DNS       : 8.8.8.8
+autoconnect : no
+
+nmcli con up dhcp1
+
+nmcli con mod dhcp1  connection.id static100  \
+                     ipv4.addresses 192.168.56.150/24 \
+                     ipv4.gateway   192.168.56.1 \
+                     ipv4.method    manual \
+                     ipv4.dns       8.8.8.8 \
+                     connection.autoconnect no
+
+nmcli con relaod
+
+nmcli con 
+
+nmcli con show static100
+
+ip addr show enp0s9
+
+nmcli con up static100
+
+ip addr show enp0s9
+
+
+static1 연결 설정 수정
+
+con-name  : dhcp2
+유동 IP 설정
+
+nmcli con up staic1
+
+ip addr show enp0s9
+
+nmcli con mod static1  connection.id dhcp2 \
+                       ipv4.method auto \
+                       ipv4.addresses "" \
+                       ipv4.gateway ""
+
+nmcli con reload
+
+nmcli con
+
+nmcli con show dhcp2
+
+ip addr show enp0s9
+
+nmcli con up dhcp2
+
+ip addr show enp0s9
+
+hostname : encore.class4로 변경
+
+hostname
+
+cat /etc/hostname
+
+hostnamectl set-hostname encore.class4
+
+hostname
+
+cat /etc/hostname
+
+
+======================================================================
+
+원격 접속
+SSH (secure shell)
+
+ssh 동작 원리
+telnet : 암호화 x (평문전송)
+ssh : 암호화 o 
+SSH는 비대칭키 암호화 방식과 대칭키 암호화 알고리즘을 동시에 사용한다.
+
+대칭키 알고리즘 : 데이터를 암호화 할 때 사용하는 키와 복호화 할때 사용하는 키가 같은 알고리즘이다.
+	- 사용되는 키는 비밀키다.
+비대칭키 알고리즘 : 데이터를 암호화 하고 복호화 할때 사용하는 키가 다른 암호화 알고리즘 이다.
+	- 공개키와 개인키
+	- 공개키 : 외부에 공개된 키로 누구나 공개키를 가지고 있어도 된다.
+		 공개키는 데이터를 암호화 하여 전달하며 공개키와 쌍으로 이루어진 개인키를 이용해 암호화된 데이터를 복호화 한다.
+	- 개인키 : 키 생성자만 갖고있는 키.
+	공개키로 암호화 -> 개인키로 복호화
+
+1. SSH 접속
+SSH 서버의 공개키를 저장하기 위한 메세지가 출력
+Server(대기) & Client(접속)
+
+1. client 가 server 접속요청
+
+2. server가 client 공개키 전송
+	서버의 공개키가 클라이언트에 저장되어 있지 않으면 SSH 서버의 공개키를 정장하기 위한 메세지가 출력된다.
+3. client : 비밀키 생성
+	공개키를 저장하고 난 다음 Client는 대칭키 알고리즘을 사용해 암호화를 위한 비밀키를 생성한다.
+
+4. client : 비밀키 암호화 (서버의 공개키)
+	이 비밀키를 다시 서버의 공개키로 암호화 하여 서버에게 전달한다.
+5. client : 비밀키 전송
+
+6. server : 비밀키 복호화 (서버의 개인키)
+
+----------------------------------------------------
+SSH 접속 - 그냥접속
+시스템에 원격으로 접속할때 기본적으로 사용자 아이디와 패스워드를 알고 있어야 한다.
+
+SSH 접속 - 키기반 인증
+사용자의 암호를 알고 있지 않아도 원격 접속 할 수 있는 인증방법이다.
+키기반 인증을 위해 키를 등록하려면 해당 사용자의 패스워드를 알아야 한다.
+
+키기반 인증 방식
+
+클라이언트 사용자
+
+ssh-keygen
+=> 키 기반 인증을 위한 공개키와 개인키 생성
+
+ssh-copy-id id@server ip address 
+=> 클라이언트가 생성한 공개키를 서버에 등록하게 됩니다.
+
+
+
+
+SSH 실습
+
+server 설정
+
+hostname : server.encore.class4
+네트워크 설정
+대상 enp0s9
+ip : 192.168.56.150/24
+gw : 192.168.56.1
+dns : 8.8.8.8
+
+hostanmectl set-hostname server.encore.class4
+nmcli con add con-name static ifname enp0s9 type ethernet
+nmcli cond mod ipv4.addresses 192.168.56.150/24 ipv4.gateway 192.168.56.1 ipv4.method manual ipv4.dns 8.8.8.8
+nmcli con reload
+nmcli con up static
+
+client
+
+hostname : client.encore.class4
+네트워크 설정
+대상 enp0s9
+ip : 192.168.56.200/24
+gw : 192.168.56.1
+dns : 8.8.8.8
+
+hostanmectl set-hostname clent.encore.class4
+nmcli con add con-name static ifname enp0s9 type ethernet
+nmcli cond mod ipv4.addresses 192.168.56.200/24 ipv4.gateway 192.168.56.1 ipv4.method manual ipv4.dns 8.8.8.8
+nmcli con reload
+nmcli con up static
+
+client 에 cuser 생성하고 활성화 시키시오.
+
+useradd cuser
+passwd cuser
+
+server에 suser 생성하고 활성화 시키시오.
+
+useradd suser
+passwd suser
+
+cuser 에서 suser로 ssh 접속
+
+ssh suser@192.168.56.150
+
+cuser 측에서 보관하고 있는 공개키(public key)와 suser가 보유한 공개키(public key) 내용 확인
+
+client
+
+vi ~/.ssh/known_hosts
+
+server
+
+vi /etc/ssh/ssh_host_ecdsa_key.pub
+
+server의 공개키와 개인키 삭제 후 sshd 재실행
+
+server
+
+rm -f /etc/ssh/ssh_host*
+
+ls /etc/ssh
+
+systemctl restart sshd
+
+ls /etc/ssh
+
+cuser 측에서 보관하고 있는 공개키(public key)와 server가 보유한 공개키(public key) 내용 확인
+
+client
+
+vi ~/.ssh/known_hosts
+
+server
+
+vi /etc/ssh/ssh_host_ecdsa_key.pub
+
+내용이 일치 하지 않음
+
+client
+
+ssh suser@192.168.56.150
+
+접속거절
+
+cuser가 suser로 접속할 수 있도록 하시오.
+
+rm ~/.ssh/known_hosts
+
+ssh suser@192.168.56.150
+
+server의 공개를 다시 받음.
+
+cuser가 suser로 암호없이 로그인 되도록 키인증방식으로 설정하시오.
+
+client
+
+ssh-keygen
+ssh-copy-id suser@192.168.56.150
+
+cuser에 server의 root 계정으로 접속 할 수 없도록 설정하시오.
+
+server
+
+vi /etc/ssh/sshd_config
+
+/PermitRoot
+
+PermitRootLongin  no로 변경
+
+======================================================================
+
+리눅스 방화벽
+-외부에서 시스템으로 접근하는 패킷을 차단하는 서비스
+-규칙을 이용해 접근을 허용하거나 차단할수 있다. 
+-zone
+	- 서비스
+	- 포트
+	- IP
+	- interface
+
+Netfilter(Kernel) <- iptables(명령)  <- iptables(service)
+		  <- firewall(service) <- firewall-cmd 
+		                       <- firewall-config
+														 
+firewall : iptables의 단점을 보완. 동적으로 방화벽 설정 변경 가능
+	- Runtime	: 시스템 운영중인 상태일때 반영. 
+	- Permanent	: 서비스가 재시작 되었을때도 반영. XML파일 
+
+-iptables : Netfilter 제어하는 도구를 사용 (Centos 7이전)
+
+pre-defined Zone
+
+block		모든 패킷 거부
+dmz			내부로 들어오는 패킷 거부
+drop		내부로 들어오는 모든 패킷 DROP 폐기, ICMP 에러도 폐기
+	폐기(drop) : 패킷을 받으면 응답 없이 버린다.
+	거절(reject) : 패킷을 받으면 거부한다라는 ICMP 패킷을 보내준다. 
+
+external	내부로 들어오는 패킷 거부 SSH만 제외 
+			외부로 나가는 모든 패킷 허용
+home		내부로 들어오는 패킷 거부
+			SSH, DHCP Client, samba, ...
+			외부로 나가는 모든 패킷 허용
+internal	내부로 들어오는 패킷 거부 
+			SSH, DHCP Client, samba, ...
+			외부로 나가는 모든 패킷 허용
+public		Default Zone
+			내부로 들어오는 모든 패킷 거부
+			SSH, DHCPv6-... 제외
+			외부로 나가는 모든 패킷 허용
+trusted		내부로 들어오는 모든 패킷 허용
+			외부로 나가는 모든 패킷 허용
+work		내부로 들어오는 모든 패킷 거부 SSH,DHCPv4, IPP 허용하거나
+			외부로 나가는 모든 패킷 허용
+
+firewalld
+
+firewall-cmd
+
+--state                                   : firewalld 실행 상태 확인
+--get-default-zone                        : 현재 기본 영역 표시
+--set-default-zone [zone]                 : 기본 영역 설정
+--get-zones                               : 사용가능한 모든 영역 나열
+--get-services                            : 사용가능한 모든 서비스 나열
+--get-active-zones                        : 현재 사용중인 모든 영역과 인터페이스 및 소스정보 나열
+--add-source=[ip주소] --zone=[zone]       : 출발지 주소 규칙 추가
+=> '--zone' 옵션을 통해 zone 지정해주지 않으면 자동으로 기본영역에 추가
+--remove-source=[ip주소]                  : IP 주소를 지정된 영역에서 제거
+--add-interface=[ifname] --zone=[zone]    : 특정 영역에 interface 연결 추가
+--change-interface=[ifname] --zone=[zone] : 영역에 연결된 interface 변경
+--list-all --zone=[zone]                  : 영역에 구성된 모든 인터페이스, 소스, 서비스, 포트 나열
+--add-service=[service] --zone=[zone]     : 해당 서비스 트래픽 허용
+--add-port=[port|protocol] --zone=[zone]  : 해당 포트나 프로토콜 트래픽 허용
+ + --permanent                            : 해당 옵션을 사용하지 않으면 현재 설정이 변경되며 영구설정은 지정이 안됨.
+--reload                                  : 런타임 구성 삭제, 영구 구성 적용
+--runtime-to-permanent                    : 실행중 설정을 영구 설정으로 변경
+
+
+
+firewalld 실습
+
+server 초기화
+
+server에서 작업
+
+nfs-utils, nfs-utils-lib 패키지 설치
+
+yum -y install nfs-utils nfs-utils-lib
+
+nfs 서비스를 시작,활성화 후에 상태 확인
+
+systemctl start nfs
+
+systemctl enalbe nfs
+
+systemctl status nfs
+
+home zone에 다음 사항 추가 영구설정
+
+포트 번호
+80/tcp, 111/tcp, 2049/udp, 20048/tcp
+
+firewall-cmd --add-port=80/tcp --permanent   --zone=home
+firewall-cmd --add-port=111/tcp --permanent  --zone=home
+firewall-cmd --add-port=2049/udp --permanent  --zone=home
+firewall-cmd --add-port=20048/tcp --permanent  --zone=home
+
+프로토콜
+ICMP
+
+firewall-cmd --add-protocol=ICMP --permanent  --zone=home
+
+서비스
+nfs
+
+firewall-cmd --add-service=nfs  --permanent  --zone=home
+
+home zone 상태 확인
+
+firewall-cmd --list-all --zone=home
+firewall-cmd --list-all --permanent  --zone=home
+
+firewall-cmd --reload
+
+firewall-cmd --list-all --zone=home
+
+home zone 을 default-zone 으로 설정
+
+firewall-cmd -set-default-zone=home
+
+
+centos 컴퓨터에서 http://192.168.56.100/index.html 을 했을 경우 this is centos 라고 출력 되도록 하시오.
+
+server 컴퓨터
+
+echo "This is Centos" > /var/www/html/index.html
+
+systemctl status httpd
+systemctl start httpd
+systemctl enable httpd
+systemctl status httpd
+
+firewall-cmd --add-service=http --permanent
+firewall-cmd --reload
+
+
+================================================================================================
