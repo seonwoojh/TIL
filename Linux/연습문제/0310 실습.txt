@@ -1,0 +1,158 @@
+﻿web 서비스 실습
+
+가상 호스트
+
+- vhost0
+
+cd /etc/httpd/conf.d/
+
+vi 00-vhost.conf
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/html0
+    ServerName vhost0.test.example.com
+    ServerAlias vhost0
+</VirtualHost>
+
+<Directory /var/www/html0>
+    AllowOverride None
+    Require all granted
+</Directory>
+
+:wq
+
+mkdir /var/www/html0
+
+echo vhost0 > /var/www/html0/index.html
+
+--------------------------------------------
+
+- vhost1
+
+cd /etc/httpd/conf.d/
+
+vi 00-vhost.conf
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/html1
+    ServerName vhost1.test.example.com
+    ServerAlias vhost1
+</VirtualHost>
+
+<Directory /var/www/html1>
+    AllowOverride None
+    Require all granted
+</Directory>
+
+:wq
+
+mkdir /var/www/html1
+
+echo vhost1 > /var/www/html1/index.html
+
+-----------------------------------------
+
+vi /etc/hosts
+
+192.168.56.100    server.test.example.com  vhost0.test.example.com vhost0 vhost1.test.example.com vhost1
+
+:wq
+
+systemcl start httpd
+
+firewall-cmd --add-service=http   --permanent 
+firewall-cmd --reload
+
+curl server.test.example.com
+curl vhost0
+curl vhost1
+
+===========================================
+
+https 실습
+
+ssl 패키지 설치
+
+yum -y install mod_ssl
+
+openssl genrsa -out private.key 2048
+openssl req –new –key private.key –out cert.csr
+openssl x509 –req –signkey private.key –in cert.csr –out cert.crt
+
+chmod 600 private.key cert.crt
+
+mv private.key /etc/pki/tls/private/
+mv cert.* /etc/pki/tls/certs/
+
+----------------------------------------------------
+
+vi /etc/httpd/conf.d/ssl.conf
+
+<VirtualHost _default_:443>
+
+DocumentRoot "/var/www/html"                   =>  # 제거
+ServerName server.test.example.com:443         =>  # 제거 후에 server.test.example.com:443 으로 변경
+
+ErrorLog logs/ssl_error_log
+TransferLog logs/ssl_access_log
+LogLevel warn
+
+SSLEngine on
+
+SSLProtocol all -SSLv2 -SSLv3
+
+SSLCipherSuite HIGH:3DES:!aNULL:!MD5:!SEED:!IDEA
+
+
+SSLCertificateFile /etc/pki/tls/certs/localhost.crt      =>    cert.crt  으로 변경
+
+SSLCertificateKeyFile /etc/pki/tls/private/localhost.key   =>    private.key 로 변경
+
+:wq
+
+----------------------------------------------------------
+
+vi /etc/httpd/conf.d/00-vhost.conf
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/html0
+    ServerName vhost0.test.example.com
+    ServerAlias vhost0
+    RewriteEngine On                                                   => 추가
+    RewriteCond %{HTTPS} off                                           => 추가
+    RewriteRule ^(.*)$https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]     => 추가
+</VirtualHost>
+
+<Directory /var/www/html0>
+    AllowOverride None
+    Require all granted
+</Directory>
+
+:wq
+
+----------------------------------------------------------------
+
+vi /etc/httpd/conf.d/01-vhost.conf
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/html1
+    ServerName vhost1.test.example.com
+    ServerAlias vhost1
+    RewriteEngine On                                                   => 추가
+    RewriteCond %{HTTPS} off                                           => 추가
+    RewriteRule ^(.*)$https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]     => 추가
+</VirtualHost>
+
+<Directory /var/www/html1>
+    AllowOverride None
+    Require all granted
+</Directory>
+
+:wq
+
+----------------------------------------------------------
+
+systemcl restart httpd
+
+firewall-cmd --add-service=https   --permanent 
+firewall-cmd --reload
