@@ -25,7 +25,7 @@ public class variable {
         int value1 = 3; // 변수 value1이 생성되는 시점
         {
             int value2 = 5; // 변수 value2가 생성되는 시점
-            System.out.println(value1);`
+            System.out.println(value1);
             System.out.println(value2);
         } // }가 닫히는 부분에서 변수 value2가 사라짐
         System.out.println(value1);
