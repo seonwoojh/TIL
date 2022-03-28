@@ -1,2 +1,2 @@
 *.ipynb linguist-detectable=false
-*. linguist-detectable=false
+*.R linguist-detectable=false
