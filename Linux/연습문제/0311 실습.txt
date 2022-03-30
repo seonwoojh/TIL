@@ -1,0 +1,234 @@
+﻿데이터 베이스 실습
+
+mysql -u root -p
+
+데이터 베이스 구문
+
+SHOW DATABASES;
+
+Use test;
+
+SHOW tables;
+
+USE mysql;
+
+SHOW tables;
+
+DISCRIBE user;
+
+-----------------------------------------------------
+
+SELECT 구문
+
+SELECT host FROM user;
+
+SELECT host 
+FROM user;
+
+SELECT host,user,password FROM user;
+
+WHERE 구문
+
+* 숫자
+
+- 부등호, 등호
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates = 0;
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates > 0;
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates >= 0;
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates != 1;
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates <> 1;
+
+- BETWEEN number AND number
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates BETWEEN -1 AND 1;
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates BETWEEN 0 AND 1;
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates BETWEEN 1 AND 2;
+
+- IN (....)
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates IN (1,2,3,4);
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates IN (1,2,3,0);
+
+- IS NULL & IS NOT NULL
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates IS NULL;
+
+SELECT host,user,password,max_updates FROM user WHERE max_updates IS NOT NULL;
+
+
+* 문자열 검색 
+
+- =
+
+SELECT host,user FROM user WHERE host = 'localhost';
+
+- LIKE
+
+SELECT host,user FROM user WHERE host LIKE 'localhost';
+
+SELECT host,user FROM user WHERE host LIKE 'local_';
+
+SELECT host,user FROM user WHERE host LIKE 'local_%';
+
+SELECT host,user FROM user WHERE host LIKE '_ocal%';
+
+SELECT host,user FROM user WHERE host LIKE 'ocal%';
+
+SELECT host,user FROM user WHERE host LIKE 'localhost%';
+
+SELECT host,user FROM user WHERE host LIKE '_____host%';
+
+SELECT host,user FROM user WHERE host LIKE '_o___host%';
+
+- LIKE + 논리연산자 (AND , OR)
+
+SELECT host,user FROM user WHERE host LIKE '%local%' AND user LIKE 'root';
+
+SELECT host,user FROM user WHERE host LIKE '%local%' OR user LIKE 'root';
+
+
+----------------------------------------------------------------------------
+
+DML 구문
+
+* 준비 과정 ( 테이블 생성 )
+
+USE test;
+
+CREATE TABLE user 
+( name varchar(10), 
+uid int,
+locate varchar(10), 
+email varchar(20)   );
+
+char(10) : 2글자 건 10글자 건 무조건 10글자 인식
+varchar(10) : 사용하는 글자에 따라서 글자수 인식
+int : 정수
+
+SELECT * FROM user;
+
+DESCRIBE user;
+
+- INSERT 구문
+
+INSERT INTO user (name,uid,locate,email)
+VALUES ('Lee',1,'seoul','lee@test.example.com');
+
+SELECT * FROM user;
+
+INSERT INTO user (uid,name,email,locate)
+VALUES (2,'KIM','kim@test.example.com','daegu');
+
+SELECT * FROM user;
+
+INSERT INTO user
+VALUES ('Lim',3,'kyunggi','lim@test.example.com');
+
+SELECT * FROM user;
+
+INSERT INTO user
+VALUES (4,'kyunggi','park@test.example.com','Park');
+
+SELECT * FROM user;
+
+- UPDATE 구문
+
+UPDATE user
+SET name='Park'
+WHERE uid=0;
+
+- DELETE  구문
+
+DELETE FROM user
+WHERE uid=0;
+
+-------------------------------
+
+조심해야 할 사항
+
+UPDATE 나 DELETE에 WHERE 을 지정해주지 않으면 전체 내용으로 반영
+
+UDATE user
+SET locate = busan;
+
+SELECT * FROM user;
+
+DELETE FROM user;
+
+SELECT * FROM user;
+
+------------------------------
+
+트랜잭션 설정 확인
+
+SHOW variables LIKE 'auto%';
+
+실시간만 autocommit 설정
+
+SET autocommit = on/off; ( true/false )
+
+
+SET autocommit = off;
+SHOW variables LIKE 'auto%';
+
+INSERT INTO user
+VALUES ('Lim',3,'kyunggi','lim@test.example.com');
+
+SELECT * FROM user;
+
+ROLLBACK
+
+SELECT * FROM user;
+
+exit
+
+---------------------------
+
+mysql -u root -p
+
+----------------------------
+
+SHOW variables LIKE 'autocommit';
+
+ON 확인
+
+exit
+
+--------------------------------
+
+영구설정
+
+vi /etc/my.cnf
+
+autocommit = 0 
+
+:wq
+
+systemctl restart mysql
+
+-------------------------------
+
+mysql -u root -p
+
+------------------------------
+
+SHOW variables LIKE 'autocommit';
+
+OFF 확인
+
+======================================================
+
+
+
+
+
+
+
