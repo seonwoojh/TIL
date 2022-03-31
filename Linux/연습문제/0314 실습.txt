@@ -1,0 +1,130 @@
+﻿
+테이블 수정
+
+ALTER TABLE user ADD age int;
+
+SELECT * FROM user;
+
+DESCRIBE user;
+
+ALTER TABLE user ADD level int(5);
+
+DESCRIBE user;
+
+ALTER TABLE DROP level;
+
+DESCRIBE user;
+
+ALTER TABLE user MODIFY email int;
+
+DESCRIBE user;
+
+SELECT * FROM user;
+
+ALTER TABLE user ADD PRIMARY KEY(uid);
+
+DESCRIBE user;
+
+ALTER TABLE user MODIFY name varchar(10) NOT NULL; 
+
+DESCRIBE user;
+
+ALTER TABLE user MODIFY locate varchar(10) UNIQUE;
+
+에러 발생 : 중복된 값이 있음.
+
+
+-----------------------------------------------------------------------------------
+
+사용자 설정
+
+
+USE mysql;
+
+SHOW TABLE;
+
+DESCRIBE user;
+
+SELECT host, user FROM user;
+
+CREATE user user01@localhost IDENTIFIED BY '123';
+ -  hostname =>  ex) 192.168.xxx.100 or 127.0.0.1 or '% ' 도 가능
+
+DESCRIBE user;
+
+SELECT Select_priv, user FROM user;
+
+SHOW GRANT FOR user01@localhost
+
+SHOW GRANT FOR root@localhost
+
+GRANT SELECT ON test.user to user01@localhost;
+
+SHOW GRANT FOR user01@localhost
+
+
+---------------------------------------------------------------------------------------
+
+데이터베이스 백업
+
+백업
+
+# mysqldump -u root -p test > test.dump
+
+# mysql -u root -p
+
+USE test
+
+SHOW TABLES;
+
+DROP TABLE user;
+
+SHOW TABLES;
+
+exit
+
+백업 풀기
+
+# mysql -u root -p test < test.dump
+
+# mysql -u root -p
+
+USE test
+
+SHOW TABLES;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
