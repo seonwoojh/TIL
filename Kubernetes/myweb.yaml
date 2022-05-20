@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myweb
+spec:
+  containers:
+    - name: myweb
+      image: httpd:2.7
+      ports:
+        - containerPort: 80
+          protocol: TCP
