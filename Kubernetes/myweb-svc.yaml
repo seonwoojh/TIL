@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: myweb-svc
+spec:
+  selector: # 파드 셀렉터
+    app: web
+  ports:
+    - port: 80 # 서비스 포트
+      targetPort: 8080 # 타켓(파드 포트)
