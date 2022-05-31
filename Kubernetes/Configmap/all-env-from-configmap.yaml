@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: container-env-example
+spec:
+  containers:
+    - name: my-container
+      image: busybox
+      args: ['tail', '-f', '/dev/null']
+      envFrom:
+        - configMapRef:
+            name: log-level-configmap # 키-값 쌍이 1개 존재하는 컨피그맵
+        - configMapRef:
+            name: start-k8s   # 키-값 쌍이 2개 존재하는 컨피그맵
