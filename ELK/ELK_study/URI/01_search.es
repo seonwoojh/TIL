@@ -12,3 +12,16 @@ GET _search?q=title:time%20machine&pretty
 
 ## explain - explain 매개변수를 추가하면 각 검색 처리에 대해 해당 검색 결과의 점수 계산에 사용된 상세 값이 출력됨.
 GET /_search?q=title:time&explain
+
+## _source - 매개변수의 값을 false로 설정하면 검색결과에서 도큐먼트 내용은 표시하지 않고 hit수와 점수(score) 등의 메타 정보만 출력함.
+
+GET _search?q=title:time&_source=false&pretty
+
+## sort - 검색결과의 출력 순서를 정할 수 있다. 기본적으로 검색결과는 _score 값을 기준으로 정렬된다.
+
+GET books/_search?q=author:jules&sort=pages:desc
+
+## timeout - 검색이 수행되는 동안 기다리는 제한시간을 지정할 수 있다.(밀리 초)
+
+## from - 검색된 결과를 몇번째 값부터 출력할지 지정한다. default 0
+GET books/_search?q=author:jules&from=1&pretty
